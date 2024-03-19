@@ -1,52 +1,79 @@
-# Prerequisites
-*.d
+# A .gitignore for Keil projects.
+# Taken mostly from http://www.keil.com/support/man/docs/uv4/uv4_b_filetypes.htm
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+# User-specific uVision files
+*.opt
+*.uvopt
+*.uvoptx
+*.uvgui
+*.uvgui.*
+*.uvguix.*
 
-# Linker output
-*.ilk
+# Listing files
+*.cod
+*.htm
+*.i
+*.lst
 *.map
-*.exp
+*.m51
+*.m66
+# define exception below if needed
+*.scr
 
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
+# Object and HEX files
+*.axf
+*.b[0-3][0-9]
 *.hex
+*.d
+*.crf
+*.elf
+*.hex
+*.h86
+*.lib
+*.obj
+*.o
+*.sbr
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+# Build files
+# define exception below if needed
+*.bat
+*._ia
+*.__i
+*._ii
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Generated output files
+/Listings/*
+/Objects/*
+
+# Debugger files
+# define exception below if needed
+*.ini
+
+# Other files
+*.build_log.htm
+*.cdb
+*.dep
+*.ic
+*.lin
+*.lnp
+*.orc
+# define exception below if needed
+*.pack
+# define exception below if needed
+*.pdsc
+*.plg
+# define exception below if needed
+*.sct
+*.sfd
+*.sfr
+
+# Miscellaneous
+*.tra
+*.bin
+*.fed
+*.l1p
+*.l2p
+*.iex
+
+# To explicitly override the above, define any exceptions here; e.g.:
+# !my_customized_scatter_file.sct
