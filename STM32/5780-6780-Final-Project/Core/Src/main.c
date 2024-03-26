@@ -103,6 +103,46 @@ void initADC(void){
 	
   // configuring the channel 0
   ADC1->CHSELR |= ADC_CHSELR_CHSEL10;
+
+    /* === ADC Calibration === */
+  /* (1) Ensure that ADEN = 0 */
+  /* (2) Clear ADEN by setting ADDIS*/
+  /* (3) Clear DMAEN */
+  /* (4) Launch the calibration by setting ADCAL */
+  /* (5) Wait until ADCAL=0 */
+
+  if ((ADC1->CR & ADC_CR_ADEN) != 0) /* (1) */
+  {
+    ADC1->CR |= ADC_CR_ADDIS; /* (2) */
+  }
+  while ((ADC1->CR & ADC_CR_ADEN) != 0)
+  {
+    /* For robust implementation, add here time-out management */
+  }
+  ADC1->CFGR1 &= ~ADC_CFGR1_DMAEN;       /* (3) */
+  ADC1->CR |= ADC_CR_ADCAL;              /* (4) */
+  while ((ADC1->CR & ADC_CR_ADCAL) != 0) /* (5) */
+  {
+    /* For robust implementation, add here time-out management */
+  }
+	
+
+  /* (1) Ensure that ADRDY = 0 */
+  /* (2) Clear ADRDY */
+  /* (3) Enable the ADC */
+  /* (4) Wait until ADC ready */
+  if ((ADC1->ISR & ADC_ISR_ADRDY) != 0) /* (1) */
+  {
+    ADC1->ISR |= ADC_ISR_ADRDY; /* (2) */
+  }
+  ADC1->CR |= ADC_CR_ADEN;                 /* (3) */
+  while ((ADC1->ISR & ADC_ISR_ADRDY) == 0) /* (4) */
+  {
+    /* For robust implementation, add here time-out management */
+  }
+	
+	//start
+	ADC1->CR |= ADC_CR_ADSTART;
 }
 
 
