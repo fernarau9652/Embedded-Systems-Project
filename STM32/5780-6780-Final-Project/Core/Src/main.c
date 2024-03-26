@@ -24,6 +24,7 @@ void initDAC(void);
 void initDMA(void);
 void initLEDs(void);
 void initI2C(void);
+void initADC(void);
 
 void SystemClock_Config(void);
 
@@ -76,6 +77,32 @@ void initTIM(void) {
 	
 	// Eventually use TIM3 for NVIC if interrupts need to be used
 
+}
+
+void initADC(void){
+// setting PC0 to analog
+  GPIOC->MODER |= (1 << 0); // setting 0th
+  GPIOC->MODER |= (1 << 1); // setting 1st
+
+  // setting PC0 to to no pull-up/down resistors
+  GPIOC->PUPDR &= ~(1 << 0); // clearing 0th bit
+  GPIOC->PUPDR &= ~(1 << 1); // clearing 1st bit
+	
+  RCC->APB2ENR |= RCC_APB2ENR_ADCEN; // Enable system clock for ADCEN peripheral
+  
+  // 8-bit
+  ADC1->CFGR1 &= ~(1 << 4);
+  ADC1->CFGR1 &= ~(1 << 3);
+	
+  // continuous conversion
+  ADC1->CFGR1 |= (1 << 13);
+	
+  // hardware triggers disabled
+  ADC1->CFGR1 &= ~(1 << 10);
+	ADC1->CFGR1 &= ~(1 << 11);
+	
+  // configuring the channel 0
+  ADC1->CHSELR |= ADC_CHSELR_CHSEL10;
 }
 
 
