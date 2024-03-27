@@ -169,6 +169,54 @@ void initI2C(void) {
 
 }
 
+/* Set up an I2C transaction. Can configure address, whether to read or write ('r' or 'w') and the number of bytes to send/receive.
+    this is the most direct method of controlling the I2C bus short of directly manipulating registers. */
+void PrepareI2C2Transaction(uint32_t address, char RD_WRN, int numbytes) {
+	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));	//clear NBYTES and ADD bitfields
+	
+	//set # of bytes to transmit=numbytes, device address 0x69, RD_WRN to write, and start
+	I2C2->CR2 |= ((numbytes << 16) | (address << 1));
+	
+	if(RD_WRN == 'w')						//request a write
+		I2C2->CR2 &= ~(1 << 10);
+	else if(RD_WRN == 'r')			//request a read
+		I2C2->CR2 |= (1 << 10);
+	else												//assume a write by default
+		I2C2->CR2 &= ~(1 << 10);
+	
+	//start
+	I2C2->CR2 |= (1 << 13);
+	
+	return;
+}
+
+/* Prepare an I2C write to the specified address using a set number of bytes and a 32-bit block of data. */
+void TransmissionWriteHelper(uint32_t address, int numbytes, uint32_t data) {
+	
+		PrepareI2C2Transaction(address, 'w', numbytes);
+	
+		//transmission block
+		while(!(I2C2->ISR & I2C_ISR_TXIS) & !(I2C2->ISR & I2C_ISR_NACKF));
+		if(I2C2->ISR & I2C_ISR_TXIS) {
+			I2C2->TXDR = data;
+		}
+		else if(I2C2->ISR & I2C_ISR_NACKF) {
+			GPIOC->ODR |= ((1 << 6) | (1 << 7) | (1 << 8) | (1 << 9));			//turn on all LEDs for fail
+		}
+}
+
+/* Receive data over I2C from the specified address. */
+char TransmissionReadHelper(uint32_t address, int numbytes) {
+	PrepareI2C2Transaction(address, 'r', numbytes);
+	while(!(I2C2->ISR & I2C_ISR_RXNE) & !(I2C2->ISR & I2C_ISR_NACKF));
+	if(I2C2->ISR & I2C_ISR_RXNE) {
+		return I2C2->RXDR;
+	}
+	else if(I2C2->ISR & I2C_ISR_NACKF) {
+		GPIOC->ODR |= ((1 << 6) | (1 << 7) | (1 << 8) | (1 << 9));			//turn on all LEDs for fail
+	}
+	return -1;	//return an error
+}
 
 /* Initialize the LEDs for debugging purposes*/
 void initLEDs(void) {	
