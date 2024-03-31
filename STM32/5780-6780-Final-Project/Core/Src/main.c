@@ -19,14 +19,102 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+// Timer functions
 void initTIM(void);
+
+// DAC functions
 void initDAC(void);
-void initDMA(void);
-void initLEDs(void);
-void initI2C(void);
+void waveDAC(void);
+
+// ADC functions
 void initADC(void);
 
+// DMA functions
+void initDMA(void);
+
+// I2C functions
+void initI2C(void);
+
+// Other functions
+void initLEDs(void);
 void SystemClock_Config(void);
+
+
+
+/* Generated Waves with 12-bit resolution and 128 samples/cycle */ // /* (Get rid of the "//" on this line to comment out the wavetables with 128 samples/cycle, return them to uncomment)
+// Interpolated Sine Wave: 12-bit, 128 samples/cycle
+const uint16_t sine_table[128] = {
+	2048,2148,2248,2348,2447,2545,2642,2737,2831,2923,3013,3100,
+	3185,3267,3346,3423,3495,3565,3630,3692,3750,3804,3853,3898,
+	3939,3975,4007,4034,4056,4073,4085,4093,4095,4093,4085,4073,
+	4056,4034,4007,3975,3939,3898,3853,3804,3750,3692,3630,3565,
+	3495,3423,3346,3267,3185,3100,3013,2923,2831,2737,2642,2545,
+	2447,2348,2248,2148,2048,1947,1847,1747,1648,1550,1453,1358,
+	1264,1172,1082,995,910,828,749,672,600,530,465,403,
+	345,291,242,197,156,120,88,61,39,22,10,2,
+	0,2,10,22,39,61,88,120,156,197,242,291,
+	345,403,465,530,600,672,749,828,910,995,1082,1172,
+	1264,1358,1453,1550,1648,1747,1847,1947};
+
+// Interpolated Triangle Wave: 12-bit, 128 samples/cycle
+const uint16_t triangle_table[128] = {
+	0,63,126,189,252,315,378,441,504,567,630,693,
+	756,819,882,945,1008,1071,1134,1197,1260,1323,1386,1449,
+	1512,1575,1638,1701,1764,1827,1890,1953,2016,2079,2142,2205,
+	2268,2331,2394,2457,2520,2583,2646,2709,2772,2835,2898,2961,
+	3024,3087,3150,3213,3276,3339,3402,3465,3528,3591,3654,3717,
+	3780,3843,3906,3969,4032,3969,3906,3843,3780,3717,3654,3591,
+	3528,3465,3402,3339,3276,3213,3150,3087,3024,2961,2898,2835,
+	2772,2709,2646,2583,2520,2457,2394,2331,2268,2205,2142,2079,
+	2016,1953,1890,1827,1764,1701,1638,1575,1512,1449,1386,1323,
+	1260,1197,1134,1071,1008,945,882,819,756,693,630,567,
+	504,441,378,315,252,189,126,63};
+
+// Interpolated Sawtooth Wave: 12-bit, 128 samples/cycle
+const uint16_t sawtooth_table[128] = {
+	0,32,64,96,128,160,192,224,256,288,320,352,
+	384,416,448,480,512,544,576,608,640,672,704,736,
+	768,800,832,864,896,928,960,992,1024,1056,1088,1120,
+	1152,1184,1216,1248,1280,1312,1344,1376,1408,1440,1472,1504,
+	1536,1568,1600,1632,1664,1696,1728,1760,1792,1824,1856,1888,
+	1920,1952,1984,2016,2048,2080,2112,2144,2176,2208,2240,2272,
+	2304,2336,2368,2400,2432,2464,2496,2528,2560,2592,2624,2656,
+	2688,2720,2752,2784,2816,2848,2880,2912,2944,2976,3008,3040,
+	3072,3104,3136,3168,3200,3232,3264,3296,3328,3360,3392,3424,
+	3456,3488,3520,3552,3584,3616,3648,3680,3712,3744,3776,3808,
+	3840,3872,3904,3936,3968,4000,4032,4064}; // */
+
+
+/* Generated Waves with 12-bit resolution and 64 samples/cycle */  /* (Get rid of the "//" on this line to comment out the wavetables with 64 samples/cycle, return them to uncomment)
+// Interpolated Sine Wave: 12-bit, 64 samples/cycle
+const uint16_t sine_table[64] = {
+	2048,2248,2447,2642,2831,3013,3185,3346,3495,3630,3750,3853,
+	3939,4007,4056,4085,4095,4085,4056,4007,3939,3853,3750,3630,
+	3495,3346,3185,3013,2831,2642,2447,2248,2048,1847,1648,1453,
+	1264,1082,910,749,600,465,345,242,156,88,39,10,
+	0,10,39,88,156,242,345,465,600,749,910,1082,
+	1264,1453,1648,1847};
+
+// Interpolated Triangle Wave: 12-bit, 64 samples/cycle
+const uint16_t triangle_table[64] = {
+	0,128,256,384,512,640,768,896,1024,1152,1280,1408,
+	1536,1664,1792,1920,2048,2176,2304,2432,2560,2688,2816,2944,
+	3072,3200,3328,3456,3584,3712,3840,3968,4095,3968,3840,3712,
+	3584,3456,3328,3200,3072,2944,2816,2688,2560,2432,2304,2176,
+	2048,1920,1792,1664,1536,1408,1280,1152,1024,896,768,640,
+	512,384,256,128};
+
+// Interpolated Sawtooth Wave: 12-bit, 128 samples/cycle
+const uint16_t sawtooth_table[64] = {
+	0,64,128,192,256,320,384,448,512,576,640,704,
+	768,832,896,960,1024,1088,1152,1216,1280,1344,1408,1472,
+	1536,1600,1664,1728,1792,1856,1920,1984,2048,2112,2176,2240,
+	2304,2368,2432,2496,2560,2624,2688,2752,2816,2880,2944,3008,
+	3072,3136,3200,3264,3328,3392,3456,3520,3584,3648,3712,3776,
+	3840,3904,3968,4032}; // */
+
+
+
 
 
 /**
@@ -52,12 +140,16 @@ int main(void)
 	// Initialize timers for the intended 42 kHz target.
 	initTIM();
 	
+	// Initialize DAC peripherals
+	initDAC();
+	
 	
 
   
   while (1)
   {
-    
+		// Test DAC waves with Discovery Analog 2
+    waveDAC();
   }
 }	// END main
 
@@ -80,7 +172,7 @@ void initTIM(void) {
 }
 
 void initADC(void){
-// setting PC0 to analog
+	// setting PC0 to analog
   GPIOC->MODER |= (1 << 0); // setting 0th
   GPIOC->MODER |= (1 << 1); // setting 1st
 
@@ -103,6 +195,7 @@ void initADC(void){
 	
   // configuring the channel 0
   ADC1->CHSELR |= ADC_CHSELR_CHSEL10;
+	
 
     /* === ADC Calibration === */
   /* (1) Ensure that ADEN = 0 */
@@ -147,10 +240,59 @@ void initADC(void){
 
 
 
-/* Initialize DAC */
+/* Initialize DAC (Using PA4) */
 void initDAC(void) {
+	/* Initialize PA4 to read DAC */
+	// (Reset state: 00)
+	GPIOA->MODER &= ~(GPIO_MODER_MODER4_Msk);
+
+	// (Analog function: 11)
+	GPIOA->MODER |= (GPIO_MODER_MODER4_Msk);
+	
+	// Configure Push/Pull Output type for PA4	(00)
+	GPIOA->OTYPER &= ~(GPIO_OTYPER_OT_4);
+	
+	// Configure low speed for PA4	(00)
+	GPIOA->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEEDR4_Msk);
+	
+	// Configure no pull-up/down resistors for PA4	(00)
+	GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR4_Msk);
+	
+	
+	/* Configure DAC */
+	// Set software trigger: (111)
+	DAC1->CR |= (DAC_CR_TSEL1_Msk);
+	
+	// DAC enable
+	DAC1->CR |= (DAC_CR_EN1_Msk);
+}
 
 
+// global variable index
+uint8_t ind = 0;
+
+/* DAC wave table */
+void waveDAC(void) {
+	// Send wave to data register DHR12R1
+	DAC1->DHR12R1 = sine_table[ind]; // Sine Wave
+	//DAC1->DHR12R1 = triangle_table[ind]; // Triangle Wave
+	//DAC1->DHR12R1 = sawtooth_table[ind]; // Sawtooth Wave
+	
+	// Track the index (ind) count
+	ind++;
+	
+	/* FOR 128 samples/cycle */ // /*
+	if (ind == 127) {
+		ind = 0;
+	} // */
+	
+	/* FOR 64 samples/cycle */  /*
+	if (ind == 63) {
+		ind = 0;
+	} // */
+	
+	// Insert delay 1ms
+	HAL_Delay(1);
 }
 
 
@@ -168,6 +310,8 @@ void initI2C(void) {
 
 
 }
+
+
 
 /* Set up an I2C transaction. Can configure address, whether to read or write ('r' or 'w') and the number of bytes to send/receive.
     this is the most direct method of controlling the I2C bus short of directly manipulating registers. */
@@ -190,6 +334,8 @@ void PrepareI2C2Transaction(uint32_t address, char RD_WRN, int numbytes) {
 	return;
 }
 
+
+
 /* Prepare an I2C write to the specified address using a set number of bytes and a 32-bit block of data. */
 void TransmissionWriteHelper(uint32_t address, int numbytes, uint32_t data) {
 	
@@ -205,6 +351,8 @@ void TransmissionWriteHelper(uint32_t address, int numbytes, uint32_t data) {
 		}
 }
 
+
+
 /* Receive data over I2C from the specified address. */
 char TransmissionReadHelper(uint32_t address, int numbytes) {
 	PrepareI2C2Transaction(address, 'r', numbytes);
@@ -217,6 +365,8 @@ char TransmissionReadHelper(uint32_t address, int numbytes) {
 	}
 	return -1;	//return an error
 }
+
+
 
 /* Initialize the LEDs for debugging purposes*/
 void initLEDs(void) {	
@@ -242,6 +392,8 @@ void initLEDs(void) {
 	GPIOC->BSRR = GPIO_BSRR_BR_8;	// Set PC8 low
 	GPIOC->BSRR = GPIO_BSRR_BR_9; // Set PC9 low
 }
+
+
 
 
 /**
