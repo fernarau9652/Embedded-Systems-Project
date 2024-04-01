@@ -133,6 +133,8 @@ int main(void)
 	__HAL_RCC_I2C2_CLK_ENABLE();
 	__HAL_RCC_TIM2_CLK_ENABLE();
 	__HAL_RCC_TIM3_CLK_ENABLE();
+	__HAL_RCC_ADC1_CLK_ENABLE();
+	__HAL_RCC_DAC1_CLK_ENABLE();
 	
 	// Initialize LEDs for debugging I2C
 	initLEDs();
@@ -286,7 +288,7 @@ void waveDAC(void) {
 		ind = 0;
 	} // */
 	
-	/* FOR 64 samples/cycle */  /*
+	/* FOR 64 samples/cycle  */  /*
 	if (ind == 63) {
 		ind = 0;
 	} // */
