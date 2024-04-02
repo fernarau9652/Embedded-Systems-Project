@@ -17,9 +17,11 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include <main.h>
 #include <math.h>  // M_PI, sin
 #include <stdint.h>
+#include <stm32f0xx_hal.h>
+#include <stm32f0xx_hal_tim.h>
 
 #define SAMPLE_RATE 42000
 #define BUFFER_SIZE 1024
@@ -29,6 +31,7 @@
 DAC_HandleTypeDef hdac;
 DMA_HandleTypeDef hdma_dac_ch1;
 DMA_HandleTypeDef hdma_dac_ch2;
+
 TIM_HandleTypeDef htim3;
 
 
@@ -60,7 +63,7 @@ int main(void)
 	uint32_t t   = 0;
 
 	// Start the timer.
-	HAL_TIM_Base_Start(&htim8);
+	HAL_TIM_Base_Start(&htim3);
 
 	// Optimization: precompute constant.
     float two_pi_f_over_sr = 2 * M_PI * FREQUENCY / SAMPLE_RATE;
@@ -85,7 +88,6 @@ int main(void)
 	}
 		
 }
-
 
 
 
