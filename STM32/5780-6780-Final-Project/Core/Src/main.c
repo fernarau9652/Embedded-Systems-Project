@@ -62,25 +62,26 @@ int main(void)
 	// Start the timer.
 	HAL_TIM_Base_Start(&htim8);
 
+	// Optimization: precompute constant.
+    float two_pi_f_over_sr = 2 * M_PI * FREQUENCY / SAMPLE_RATE;
+
 	while (1) {
     	uint16_t* buffer = buffers[curr]; // Get the buffer being written.
 		// Prep the buffer.
 		for (int i = 0; i < BUFFER_SIZE; i++, t++) {
-			float val = sin(2 * M_PI * FREQUENCY * t / SAMPLE_RATE);
-			buffer[i] = 2047 * val + 2047; // Scale the value from [-1, 1] to [0, 2^12-1).
+			buffer[i] = 2047 * sin(two_pi_f_over_sr * t) + 2047;
 		}
 
 		// Wait for DAC to be ready, so that the buffer can be modified on the next iteration.
-		while (HAL_DAC_GetState(&hdac) != HAL_DAC_STATE_READY)
-			;
+		while (HAL_DAC_GetState(&hdac) != HAL_DAC_STATE_READY){};
 
 		// Start the DMA.
 		HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t*)buffer, BUFFER_SIZE, DAC_ALIGN_12B_R);
 
-		    // Point to the other buffer, so that we
-    // prepare it while the previous one
-    // is being sent.
-    curr = !curr;
+		// Point to the other buffer, so that we
+		// prepare it while the previous one
+		// is being sent.
+		curr = !curr;
 	}
 		
 }
@@ -210,8 +211,14 @@ static void MX_DMA_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+	RCC->AHBENR |= RCC_AHBENR_GPIOAEN; // Enable the system clock for the GPIOC peripheral
+	// setting PA4 to analog
+  GPIOA->MODER |= (1 << 8); // setting 9th
+  GPIOA->MODER |= (1 << 9); // setting 10th
+
+  // setting PA4 to to no pull-up/down resistors
+  GPIOA->PUPDR &= ~(1 << 9); // clearing 9th bit
+  GPIOA->PUPDR &= ~(1 << 10); // clearing 10th bit
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
