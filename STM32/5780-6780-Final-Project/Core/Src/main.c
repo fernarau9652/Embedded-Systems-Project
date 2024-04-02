@@ -18,6 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stdlib.h"
+#include "usart.h"
+#include "i2c.h"
 
 // Timer functions
 void initTIM(void);
@@ -32,12 +35,14 @@ void initADC(void);
 // DMA functions
 void initDMA(void);
 
-// I2C functions
-void initI2C(void);
-
 // Other functions
 void initLEDs(void);
 void SystemClock_Config(void);
+void TransmitUSARTToI2C(uint32_t address);
+
+// UART receive stuff
+volatile char receivedData;
+volatile char newDataAvailable;
 
 
 
@@ -114,9 +119,6 @@ const uint16_t sawtooth_table[64] = {
 	3840,3904,3968,4032}; // */
 
 
-
-
-
 /**
   * @brief  The application entry point.
   * @retval int
@@ -140,21 +142,36 @@ int main(void)
 	initLEDs();
 	
 	// Initialize timers for the intended 42 kHz target.
-	initTIM();
+	//initTIM();
 	
 	// Initialize DAC peripherals
 	initDAC();
 	
+	//initI2C();
 	
+	//initUSART();
+	
+	USARTSetup();
 
+	// Test DAC waves with Discovery Analog 2
+	waveDAC();
   
-  while (1)
+	while (1)
   {
-		// Test DAC waves with Discovery Analog 2
-    waveDAC();
+		transmit_string("Waiting for USART input.\r\n");
+		
+		while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE) { }		//prevent the text from being sent like crazy
+		if(newDataAvailable) {
+			//TransmissionWriteHelper(0, sizeof(receivedData), receivedData);
+			transmit_string("Sending");
+			TransmitUSARTToI2C(0);
+			
+		}
+		
+		receivedData = 0;
   }
-}	// END main
 
+}	// END main
 
 
 /* Initialize Timer to the Nyquist sampling rate */
@@ -305,67 +322,24 @@ void initDMA(void) {
 
 }
 
-
-
-/* Initialize I2C */
-void initI2C(void) {
-
-
+//the interrupt handler for USART
+void USART3_4_IRQHandler(void) {
+	receivedData = USART3->RDR;
+	transmit_char(receivedData);
+	newDataAvailable = 1;
 }
 
-
-
-/* Set up an I2C transaction. Can configure address, whether to read or write ('r' or 'w') and the number of bytes to send/receive.
-    this is the most direct method of controlling the I2C bus short of directly manipulating registers. */
-void PrepareI2C2Transaction(uint32_t address, char RD_WRN, int numbytes) {
-	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));	//clear NBYTES and ADD bitfields
-	
-	//set # of bytes to transmit=numbytes, device address 0x69, RD_WRN to write, and start
-	I2C2->CR2 |= ((numbytes << 16) | (address << 1));
-	
-	if(RD_WRN == 'w')						//request a write
-		I2C2->CR2 &= ~(1 << 10);
-	else if(RD_WRN == 'r')			//request a read
-		I2C2->CR2 |= (1 << 10);
-	else												//assume a write by default
-		I2C2->CR2 &= ~(1 << 10);
-	
-	//start
-	I2C2->CR2 |= (1 << 13);
-	
-	return;
-}
-
-
-
-/* Prepare an I2C write to the specified address using a set number of bytes and a 32-bit block of data. */
-void TransmissionWriteHelper(uint32_t address, int numbytes, uint32_t data) {
-	
-		PrepareI2C2Transaction(address, 'w', numbytes);
-	
-		//transmission block
-		while(!(I2C2->ISR & I2C_ISR_TXIS) & !(I2C2->ISR & I2C_ISR_NACKF));
-		if(I2C2->ISR & I2C_ISR_TXIS) {
-			I2C2->TXDR = data;
-		}
-		else if(I2C2->ISR & I2C_ISR_NACKF) {
-			GPIOC->ODR |= ((1 << 6) | (1 << 7) | (1 << 8) | (1 << 9));			//turn on all LEDs for fail
-		}
-}
-
-
-
-/* Receive data over I2C from the specified address. */
-char TransmissionReadHelper(uint32_t address, int numbytes) {
-	PrepareI2C2Transaction(address, 'r', numbytes);
-	while(!(I2C2->ISR & I2C_ISR_RXNE) & !(I2C2->ISR & I2C_ISR_NACKF));
-	if(I2C2->ISR & I2C_ISR_RXNE) {
-		return I2C2->RXDR;
+// Transmits anything received over USART to an I2C device of the specified address.
+void TransmitUSARTToI2C(uint32_t address) {
+	transmit_char('#');
+	while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE);
+	transmit_char('@');
+	if(newDataAvailable) {
+		transmit_string("Now sending data to I2C.\r\n");
+		TransmissionWriteHelper(address, sizeof(receivedData), receivedData);
 	}
-	else if(I2C2->ISR & I2C_ISR_NACKF) {
-		GPIOC->ODR |= ((1 << 6) | (1 << 7) | (1 << 8) | (1 << 9));			//turn on all LEDs for fail
-	}
-	return -1;	//return an error
+	
+	transmit_string("Data sent.\r\n");
 }
 
 
