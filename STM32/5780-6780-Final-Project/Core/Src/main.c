@@ -21,6 +21,7 @@
 #include "stdlib.h"
 #include "usart.h"
 #include "i2c.h"
+#include "ds1803i2c.h"
 
 // Timer functions
 void initTIM(void);
@@ -149,6 +150,8 @@ int main(void)
 	
 	//initialize I2C interface
 	initI2C();
+		//The digital potentiometer places the device identifier "0101" in the 
+		//upper 4 bits of the initial starting byte that's sent along with the device address!
 	
 	//initialize USART
 	USARTSetup();
@@ -160,12 +163,13 @@ int main(void)
 	while (1)
   {
 		transmit_string("Waiting for USART input.\r\n");
+		WritePot(2, 8, 0);
 		
 		while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE) { }		//prevent the text from being sent like crazy
 		if(newDataAvailable) {
 			//TransmissionWriteHelper(0, sizeof(receivedData), receivedData);
-			transmit_string("Sending");
-			TransmitUSARTToI2C(0);
+			transmit_string("\r\nSending\r\n");
+			//TransmitUSARTToI2C(0);
 			
 		}
 		

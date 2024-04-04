@@ -420,6 +420,11 @@
               <FileType>1</FileType>
               <FilePath>..\Core\Src\i2c.c</FilePath>
             </File>
+            <File>
+              <FileName>ds1803i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\ds1803i2c.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

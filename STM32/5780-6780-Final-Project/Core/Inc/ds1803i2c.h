@@ -1,0 +1,1 @@
+void WritePot(__UINT32_TYPE__ address, __INT8_TYPE__ data, char potnum);
