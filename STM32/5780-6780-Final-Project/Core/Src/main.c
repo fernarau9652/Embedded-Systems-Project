@@ -163,14 +163,14 @@ int main(void)
 	while (1)
   {
 		transmit_string("Waiting for USART input.\r\n");
-		WritePot(2, 8, 0);
+		
 		
 		while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE) { }		//prevent the text from being sent like crazy
 		if(newDataAvailable) {
 			//TransmissionWriteHelper(0, sizeof(receivedData), receivedData);
 			transmit_string("\r\nSending\r\n");
 			//TransmitUSARTToI2C(0);
-			
+			WritePot(0, receivedData, 0);
 		}
 		
 		receivedData = 0;
