@@ -142,20 +142,21 @@ int main(void)
 	initLEDs();
 	
 	// Initialize timers for the intended 42 kHz target.
-	//initTIM();
+	initTIM();
 	
 	// Initialize DAC peripherals
 	initDAC();
 	
-	//initI2C();
+	//initialize I2C interface
+	initI2C();
 	
-	//initUSART();
-	
+	//initialize USART
 	USARTSetup();
 
 	// Test DAC waves with Discovery Analog 2
 	waveDAC();
-  
+	
+	
 	while (1)
   {
 		transmit_string("Waiting for USART input.\r\n");
@@ -169,6 +170,10 @@ int main(void)
 		}
 		
 		receivedData = 0;
+		
+		
+		//TransmissionWriteHelper(0x70, 1, 0xf);				//test write
+		
   }
 
 }	// END main

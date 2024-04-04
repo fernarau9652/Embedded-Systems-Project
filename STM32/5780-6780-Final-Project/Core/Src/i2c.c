@@ -8,8 +8,8 @@ void initI2C(void) {
 	
 	//set PB14 to alternate function mode, open-drain output type, and I2C2_SDA as alt funct
 	GPIOB->MODER = (GPIOB->MODER & (~(GPIO_MODER_MODER14)) | GPIO_MODER_MODER14_1);
-	GPIOB->OTYPER |= (1 << 14);	//set bit 14 in OTYPER to open-drain
-	GPIOB->AFR[1] |= (1 << 24);	//we want alternate function mode AF1 for AFSEL14 (pin 14 on port b)
+	GPIOB->OTYPER |= (1 << 14);	//set bit 1 in OTYPER to open-drain
+	GPIOB->AFR[1] |= (0x5 << 24);	//we want alternate function mode AF5 for AFSEL14 (pin 14 on port b)
 	
 	//set PB13 to alternate function mode, open-drain output type, and I2C2_SCL as alt function
 	GPIOB->MODER = (GPIOB->MODER & (~(GPIO_MODER_MODER13)) | GPIO_MODER_MODER13_1);
