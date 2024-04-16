@@ -17,219 +17,127 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <main.h>
-#include <math.h>  // M_PI, sin
-#include <stdint.h>
-#include <stm32f0xx_hal.h>
-#include <stm32f0xx_hal_tim.h>
+#include "main.h"
 
-#define SAMPLE_RATE 42000
-#define BUFFER_SIZE 1024
-#define FREQUENCY   440
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
 
+/* USER CODE END Includes */
 
-DAC_HandleTypeDef hdac;
-DMA_HandleTypeDef hdma_dac_ch1;
-DMA_HandleTypeDef hdma_dac_ch2;
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
 
-TIM_HandleTypeDef htim3;
+/* USER CODE END PTD */
 
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
 
-/* Private function prototypes */
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
-static void MX_TIM3_Init(void);
-static void MX_DAC_Init(void);
+/* USER CODE BEGIN PFP */
 
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
-int main(void)
-{
-	HAL_Init();
-	SystemClock_Config();
+int main(void) {
+	
+	// red 6 blue 7 orange 8 green 9 
+	
+SystemClock_Config(); //Configure the system clock
+	
 
-	/* Initialize DMA,TIM3,GPIO peripherals */
-	MX_GPIO_Init();
-	MX_DMA_Init();
-	MX_TIM3_Init();
-	MX_DAC_Init();
+// Enable the system clock for the C peripheral
+RCC->AHBENR |= (1 << 19);
 
-	uint16_t buffers[2][BUFFER_SIZE]; // New: add a second buffer.
-	uint8_t curr = 0;                 // Index of current buffer.
-	uint32_t t   = 0;
+// Enable the system clock for the A peripheral 
+RCC->AHBENR |= (1 << 17);
 
-	// Start the timer.
-	HAL_TIM_Base_Start(&htim3);
+//configure the USER button pin (PA0) to input mode (Clears the 1st and 2nd bits in the GPIOA_MODER register
+GPIOA->MODER &= ~(0b00000001);
+GPIOA->MODER &= ~(0b00000010);
 
-	// Optimization: precompute constant.
-    float two_pi_f_over_sr = 2 * M_PI * FREQUENCY / SAMPLE_RATE;
 
-	while (1) {
-    	uint16_t* buffer = buffers[curr]; // Get the buffer being written.
-		// Prep the buffer.
-		for (int i = 0; i < BUFFER_SIZE; i++, t++) {
-			buffer[i] = 2047 * sin(two_pi_f_over_sr * t) + 2047;
-		}
+//configure the USER button pin to low speed
+GPIOA->OSPEEDR &= ~(0b00000001);
 
-		// Wait for DAC to be ready, so that the buffer can be modified on the next iteration.
-		while (HAL_DAC_GetState(&hdac) != HAL_DAC_STATE_READY){};
+//Enable the pull-down resistor for the USER button pin
+GPIOA->PUPDR |= (1 << 1);
+GPIOA->PUPDR &= ~(0b00000001);
 
-		// Start the DMA.
-		HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t*)buffer, BUFFER_SIZE, DAC_ALIGN_12B_R);
+//configure the LEDs Pins 
+GPIOC->MODER |= (1 <<12); //setting PC6 to general output 
+GPIOC->MODER |= (1 <<14); //setting PC7 to general output 
+GPIOC->MODER |= (1 <<16); //setting PC8 to general output
+GPIOC->MODER |= (1 <<18); //setting PC9 to general output
 
-		// Point to the other buffer, so that we
-		// prepare it while the previous one
-		// is being sent.
-		curr = !curr;
+GPIOC->OTYPER |= (0 << 7);//setting PC6 to push/pull output 
+GPIOC->OTYPER |= (0 << 8);//setting PC7 to push/pull output 
+GPIOC->OTYPER |= (0 << 9);//setting PC8 to push/pull output
+GPIOC->OTYPER |= (0 << 10);//setting PC9 to push/pull output
+
+GPIOC->OSPEEDR |= (0 <<12); //setting PC6 to low speed
+GPIOC->OSPEEDR |= (0 <<14); //setting PC7 to low speed
+GPIOC->OSPEEDR |= (0 <<16); //setting PC8 to low speed
+GPIOC->OSPEEDR |= (0 <<18); //setting PC9 to low speed
+
+GPIOC->PUPDR |= (0 <<12); //setting PC6 to to no pull-up/down resistors
+GPIOC->PUPDR |= (0 <<14); //setting PC7 to to no pull-up/down resistors
+GPIOC->PUPDR |= (0 <<16); //setting PC8 to to no pull-up/down resistors
+GPIOC->PUPDR |= (0 <<18); //setting PC9 to to no pull-up/down resistors
+
+// Setting Pins initial states
+GPIOC->ODR |= (0 << 6); //setting pin 6 to high
+GPIOC->ODR |= (0 << 7); //setting pin 7 to high
+GPIOC->ODR |= (0 << 8); //setting pin 8 to high
+GPIOC->ODR |= (1 << 9); //setting pin 9 to high
+
+
+uint32_t debouncer = 0;
+
+while (1) {
+		HAL_Delay(1); // Delay 1ms
+	
+	debouncer = (debouncer << 1); // Always shift every loop iteration
+	
+	if (GPIOA->IDR & 0x1) { // If input signal is set/high
+		debouncer |= 0x01; // Set lowest bit of bit-vector
 	}
-		
+	if (debouncer == 0xFFFFFFFF) {
+		// This code triggers repeatedly when button is steady high!
+	}
+	if (debouncer == 0x00000000) {
+	// This code triggers repeatedly when button is steady low!
+	}
+	if (debouncer == 0x7FFFFFFF) {
+	// This code triggers only once when transitioning to steady high!
+		GPIOC->ODR ^= 0b001000000; // Inverts the 6th
+		GPIOC->ODR ^= 0b010000000; // Inverts the 7th
+	}
+	// When button is bouncing the bit-vector value is random since bits are set when the button is high and not when it bounces low.
+
+	}
 }
-
-
-
-/**
-  * @brief DAC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_DAC_Init(void)
-{
-
-  /* USER CODE BEGIN DAC_Init 0 */
-
-  /* USER CODE END DAC_Init 0 */
-
-  DAC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN DAC_Init 1 */
-
-  /* USER CODE END DAC_Init 1 */
-
-  /** DAC Initialization
-  */
-  hdac.Instance = DAC;
-  if (HAL_DAC_Init(&hdac) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** DAC channel OUT1 config
-  */
-  sConfig.DAC_Trigger = DAC_TRIGGER_T3_TRGO;
-  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
-  if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** DAC channel OUT2 config
-  */
-  if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN DAC_Init 2 */
-
-  /* USER CODE END DAC_Init 2 */
-
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 1;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 189;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-  HAL_TIM_MspPostInit(&htim3);
-
-}
-
-/**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Channel2_3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
-  /* DMA1_Channel4_5_6_7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel4_5_6_7_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel4_5_6_7_IRQn);
-
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-	RCC->AHBENR |= RCC_AHBENR_GPIOAEN; // Enable the system clock for the GPIOC peripheral
-	// setting PA4 to analog
-  GPIOA->MODER |= (1 << 8); // setting 9th
-  GPIOA->MODER |= (1 << 9); // setting 10th
-
-  // setting PA4 to to no pull-up/down resistors
-  GPIOA->PUPDR &= ~(1 << 9); // clearing 9th bit
-  GPIOA->PUPDR &= ~(1 << 10); // clearing 10th bit
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
-}
-
 
 /**
   * @brief System Clock Configuration
