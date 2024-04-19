@@ -22,6 +22,9 @@
 #include "usart.h"
 #include "i2c.h"
 #include "ds1803i2c.h"
+#include "stm32f0xx.h"                  // Device header
+#include <stdio.h>
+#include <string.h>
 
 // Timer functions
 void initTIM(void);
@@ -44,7 +47,8 @@ void TransmitUSARTToI2C(uint32_t address);
 // UART receive stuff
 volatile char receivedData;
 volatile char newDataAvailable;
-
+#define MaxBufferSize 10
+volatile char input_buffer[MaxBufferSize - 1];			//a buffer with some defined maximum space
 
 
 /* Generated Waves with 12-bit resolution and 128 samples/cycle */ // /* (Get rid of the "//" on this line to comment out the wavetables with 128 samples/cycle, return them to uncomment)
@@ -164,7 +168,7 @@ int main(void)
   {
 		transmit_string("Waiting for USART input.\r\n");
 		
-		
+		/*
 		while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE) { }		//prevent the text from being sent like crazy
 		if(newDataAvailable) {
 			//TransmissionWriteHelper(0, sizeof(receivedData), receivedData);
@@ -173,8 +177,17 @@ int main(void)
 			WritePot(0, receivedData, 0);
 		}
 		
-		receivedData = 0;
+		receivedData = 0;*/
 		
+		if(newDataAvailable) {
+			
+			//use strtol to translate the input string to a long
+			long convertedData = strtol((void*)input_buffer, NULL, 10) + 1;
+			
+			WritePot(0, convertedData, 0);
+			
+			newDataAvailable = 0;		//data transfer complete
+		}
 		
 		//TransmissionWriteHelper(0x70, 1, 0xf);				//test write
 		
@@ -333,16 +346,46 @@ void initDMA(void) {
 
 //the interrupt handler for USART
 void USART3_4_IRQHandler(void) {
-	receivedData = USART3->RDR;
+	
+	static char received_buffer[MaxBufferSize];
+	static int received_index = 0;
+	
+	if(USART3->ISR & USART_ISR_RXNE) {								//character has been received
+		char receivedChar = (char)(USART3->RDR & 0xFF);		//filter the received character and store it temporarily
+		
+		if((receivedChar == '\r') || (receivedChar == '\n')) {
+			if(received_index != 0) {
+				memcpy((void*)input_buffer, received_buffer, received_index);			//copy the contents of the received buffer to the input buffer
+			
+				input_buffer[received_index] = 0;																	//terminate the string
+				newDataAvailable = 1;
+				
+				received_index = 0;																								//reset and prepare for more data
+			}
+		}
+		
+		else {
+			if((receivedChar == '$') || (received_index == MaxBufferSize))	//error cases will reset the index to 0
+				received_index = 0;
+			
+			received_buffer[received_index++] = receivedChar;								//otherwise, append data to the buffer
+		}
+	}
+	
+	transmit_string("Sending the following data: ");
+	transmit_string((void*)input_buffer);																//transmit back what was sent over UART for confirmation
+	transmit_string("\n");
+	
+	/*receivedData = USART3->RDR;
 	transmit_char(receivedData);
-	newDataAvailable = 1;
+	newDataAvailable = 1;*/	
 }
 
 // Transmits anything received over USART to an I2C device of the specified address.
 void TransmitUSARTToI2C(uint32_t address) {
-	transmit_char('#');
-	while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE);
-	transmit_char('@');
+	//transmit_char('#');
+	//while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE);
+	//transmit_char('@');
 	if(newDataAvailable) {
 		transmit_string("Now sending data to I2C.\r\n");
 		TransmissionWriteHelper(address, sizeof(receivedData), receivedData);

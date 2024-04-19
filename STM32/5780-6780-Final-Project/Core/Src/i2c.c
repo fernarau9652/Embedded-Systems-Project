@@ -53,7 +53,7 @@ void TransmissionWriteHelper(uint32_t address, int numbytes, uint32_t data) {
 		PrepareI2C2Transaction(address, 'w', numbytes);
 		
 		//transmission block (PUT THIS BACK LATER)*************************************************************************
-		//while(!(I2C2->ISR & I2C_ISR_TXIS) & !(I2C2->ISR & I2C_ISR_NACKF));			//block until there is a response 
+		while(!(I2C2->ISR & I2C_ISR_TXIS) & !(I2C2->ISR & I2C_ISR_NACKF));			//block until there is a response 
 	
 		if(I2C2->ISR & I2C_ISR_TXIS) {
 			I2C2->TXDR = data;
