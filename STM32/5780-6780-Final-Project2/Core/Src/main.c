@@ -22,7 +22,7 @@
 #include "usart.h"
 #include "i2c.h"
 #include "ds1803i2c.h"
-#include "stm32f0xx.h"                  // Device header
+#include "stm32f0xx.h"  // Device header
 #include <stdio.h>
 #include <string.h>
 
@@ -35,7 +35,7 @@
 volatile char receivedData;
 volatile char newDataAvailable;
 #define MaxBufferSize 10
-volatile char input_buffer[MaxBufferSize - 1];			//a buffer with some defined maximum space
+volatile char input_buffer[MaxBufferSize - 1];  //a buffer with some defined maximum space
 
 
 // DAC2DMA private defines
@@ -48,7 +48,6 @@ volatile char input_buffer[MaxBufferSize - 1];			//a buffer with some defined ma
 // Private variables
 DAC_HandleTypeDef hdac;
 DMA_HandleTypeDef hdma_dac_ch1;
-
 TIM_HandleTypeDef htim7;
 
 
@@ -188,7 +187,31 @@ int main(void)
 	
   while (1)
   {
-    
+    transmit_string("Waiting for USART input.\r\n");
+		
+		/*
+		while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE) { }		//prevent the text from being sent like crazy
+		if(newDataAvailable) {
+			//TransmissionWriteHelper(0, sizeof(receivedData), receivedData);
+			transmit_string("\r\nSending\r\n");
+			//TransmitUSARTToI2C(0);
+			WritePot(0, receivedData, 0);
+		}
+		
+		receivedData = 0;*/
+		
+		if(newDataAvailable) {
+			
+			//use strtol to translate the input string to a long
+			long convertedData = strtol((void*)input_buffer, NULL, 10) + 1;
+			
+			WritePot(0, convertedData, 0);
+			
+			newDataAvailable = 0;		//data transfer complete
+		}
+		
+		//TransmissionWriteHelper(0x70, 1, 0xf);				//test write
+		
   }
 }
 
