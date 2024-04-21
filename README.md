@@ -3,16 +3,47 @@ ECE 5780/6780 Mini-Project for SPRING 2024 \
 Team Members: Chase Griswold (6780), Fernando Araujo (6780), Alex Baret (5780), Vincent Banh (5780)
 
 ## Overview
-Briefly introduce the project, including its purpose, goals, and any relevant context. Mention the target hardware platform, development tools, and programming languages used.
+_Briefly introduce the project, including its purpose, goals, and any relevant context. Mention the target hardware platform, development tools, and programming languages used._
+
+Analog waveforms may be generated with two custom PCBs designed specifically for this project. One PCB generates a square wave with its frequency variation controlled via an I2C-controlled digital potentiometer. 
+
+The other PCB is designed to emit analog waveforms and may be configured to generate a square wave, a triangle wave, or a sine wave using LM741 Operational Amplifiers. Waveforms from the second PCB may be sampled using the onboard ADC of the STM32. 
+
+Separate from the custom-PCB waveform generation, TIM7 (a timer onboard the STM32) consisting of a 16-bit auto-reload counter driven by a programmable
+prescaler, a direct memory access controller (DMA onboard the STM32) used to perform programmable data transfers between memory-mapped peripherals, and a digital-to-analog converter (DAC onboard the STM32) have been utilized to implement digital signal synthesis.
+
+#### Target Hardware Platform(s) ####
+- STM32F072 MCU
+- Function Generator PCB
+- I2C Frequency Oscillator PCB
+- FT232RL chip for USB/USART communication
+#### Development Tools ####
+- μVision Kiel IDE
+- Diligent Waveforms 
+#### Programming Languages ####
+- C 
 
 ## Features
-List the key features and functionalities of the embedded system. This could include hardware components, sensors, actuators, communication protocols, user interfaces, etc.
+_List the key features and functionalities of the embedded system. This could include hardware components, sensors, actuators, communication protocols, user interfaces, etc._
+
+- Output analog sine waves using TIM7, DMA, and DAC to PA4
+- Square Wave Function Generator PCB that uses an LM324N and a DS18030 Digital Potentiometer
+- Control the frequency of the I2C-controlled DS18030 Potentiometer through a PuTTy interface that communicates through USART
+- Function Generator PCB utilizing LM741 Operational Amplifiers to generate square, triangle, and sine waves
 
 ## Getting Started
-Provide instructions for setting up the development environment and getting the project up and running on the target hardware. Include any dependencies, libraries, or tools required.
+_Provide instructions for setting up the development environment and getting the project up and running on the target hardware. Include any dependencies, libraries, or tools required._
+
+
+1) Acquire an ADC for waveform analysis
+2) Diligent Waveforms 
+3) USB/USART chip
+4) μVision Kiel IDE
 
 ### Prerequisites
-List any prerequisites or dependencies needed to build and run the project. This could include software tools, compilers, SDKs, etc.
+_List any prerequisites or dependencies needed to build and run the project. This could include software tools, compilers, SDKs, etc._
+
+
 
 ### Installation
 Step-by-step instructions for installing and configuring the project. Include commands, configuration files, or scripts necessary to set up the environment.
