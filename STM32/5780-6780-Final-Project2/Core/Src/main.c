@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <stm32f0xx_hal.h>
 #include <stm32f0xx_hal_tim.h>
+#include <ctype.h>
 
 // UART receive defines
 volatile char receivedData;
@@ -187,40 +188,37 @@ int main(void)
 	
   while (1)
   {
-    transmit_string("Waiting for USART input.\n");
+    transmit_string("Waiting for USART input. Please enter a number between 0 and 255.\n\r");
 				
 		while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE) { }
 		
 		//transmit_char(newDataAvailable);
 		if(newDataAvailable) {
 			
-			//use strtol to translate the input string to a long (but only hold onto it as an int because that's what the pot can handle)
-			int convertedData = strtol((void*)input_buffer, NULL, 10);
-			//WritePot(0, convertedData, 0);
-			init_digiPot(convertedData);
-			transmit_string("Received: ");
-			transmit_string((void*)input_buffer);
-			transmit_string(". Converted to: ");
-			transmit_char((char)convertedData);
-			transmit_string("\n");
+			//use strtol to translate the input string to a long
+			long convertedData = strtol((void*)input_buffer, NULL, 10);
+
+			if((convertedData > 255) || (convertedData < 0)) {
+				transmit_string("Invalid value!\n\r");
+				newDataAvailable = 0;
+			}
 			
-			newDataAvailable = 0;		//data transfer complete
+			else {
+				init_digiPot((int)convertedData);								//call Chase's digiPot code and send the translated data
+				
+				char slingshotStr[sizeof(char) + 3];						//"slingshot" the conversion back into a string for confirmation
+				sprintf(slingshotStr, "%ld", convertedData);
+
+				transmit_string("Received: ");									//provide feedback over UART so that the user knows what's happening
+				transmit_string((void*)input_buffer);
+				transmit_string(". Converted to: ");
+				transmit_string(slingshotStr);
+				transmit_string("\n\r");
+			}
+			
+			newDataAvailable = 0;		//data transfer complete. reset status
 		}		
   }
-	
-	/*static int data = 0;
-	while (1)
-			{
-					init_digiPot(data);
-					if(data<255) {
-						data++;
-					}
-					else {
-						data = 0;
-					}
-					HAL_Delay(25); // Delay 400ms
-					GPIOC->ODR ^= (1 << 6);
-			}*/
 }
 
 
@@ -302,31 +300,28 @@ void initADC(void){
 	ADC1->CR |= ADC_CR_ADSTART;
 }
 
-
-
-
-
-
-
-
 //the interrupt handler for USART
 void USART3_4_IRQHandler(void) {
 	receivedData = USART3->RDR;
 	static int received_index = 0;
-	newDataAvailable = 1;
+	//newDataAvailable = 1;
 	
-	//if(USART3->ISR & USART_ISR_RXNE) {								//character has been received
-		char receivedChar = (char)(USART3->RDR & 0xFF);		//filter the received character and store it temporarily
+	char receivedChar = (char)(USART3->RDR & 0xFF);		//filter the received character and store it temporarily
+	
+	if((receivedChar == '\r') || (receivedChar == '\n')) {
+		if(received_index != 0) {
+			memcpy((void*)input_buffer, received_buffer, received_index);			//copy the contents of the received buffer to the input buffer
 		
-		if((receivedChar == '\r') || (receivedChar == '\n')) {
-			if(received_index != 0) {
-				memcpy((void*)input_buffer, received_buffer, received_index);			//copy the contents of the received buffer to the input buffer
+			input_buffer[received_index] = 0;																	//terminate the string
+			newDataAvailable = 1;
 			
-				input_buffer[received_index] = 0;																	//terminate the string
-				newDataAvailable = 1;
-				
-				received_index = 0;																								//reset and prepare for more data
-			}
+			received_index = 0;																								//reset and prepare for more data
+		}
+	}
+	
+	else {
+		if(isalpha(receivedChar)) {
+			transmit_string("That is not a valid input!\n\r");
 		}
 		
 		else {
@@ -335,34 +330,8 @@ void USART3_4_IRQHandler(void) {
 			
 			received_buffer[received_index++] = receivedChar;								//otherwise, append data to the buffer
 		}
-	//}
-	
-	//transmit_string("Sending the following data: ");
-	//transmit_string((void*)received_buffer);																//transmit back what was sent over UART for confirmation
-	//transmit_string("\n");
-	
-	//receivedData = USART3->RDR;
-	//transmit_char(receivedData);
-	//newDataAvailable = 1;
-	
-	/*receivedData = USART3->RDR;
-	transmit_char(receivedData);
-	newDataAvailable = 1;*/	
-}
-
-// Transmits anything received over USART to an I2C device of the specified address.
-/*void TransmitUSARTToI2C(uint32_t address) {
-	//transmit_char('#');
-	//while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE);
-	//transmit_char('@');
-	if(newDataAvailable) {
-		transmit_string("Now sending data to I2C.\r\n");
-		TransmissionWriteHelper(address, sizeof(receivedData), receivedData);
 	}
-	
-	transmit_string("Data sent.\r\n");
-}*/
-
+}
 
 /* Initialize the LEDs for debugging purposes */
 void initLEDs(void) {	
