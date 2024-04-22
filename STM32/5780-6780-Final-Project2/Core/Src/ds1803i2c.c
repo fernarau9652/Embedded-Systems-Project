@@ -18,7 +18,7 @@ void WritePot(__UINT32_TYPE__ address, __INT8_TYPE__ data, char potnum) {
 		fulldata |= 0xAA;																												//otherwise, pot1's commmand byte is appended
 		
 	//send the full thing in one go
-	TransmissionWriteHelper(controlbyte, 3, fulldata);												//this SHOULD send.
+	//TransmissionWriteHelper(controlbyte, 3, fulldata);												//this SHOULD send.
 }
 
 //void ReadPot(

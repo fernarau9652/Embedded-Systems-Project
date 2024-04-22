@@ -34,9 +34,9 @@
 // UART receive defines
 volatile char receivedData;
 volatile char newDataAvailable;
-#define MaxBufferSize 10
+#define MaxBufferSize 100
 volatile char input_buffer[MaxBufferSize - 1];  //a buffer with some defined maximum space
-
+static char received_buffer[MaxBufferSize];
 
 // DAC2DMA private defines
 #define pi 3.14155926
@@ -65,8 +65,8 @@ void DAC2DMA_wave (void);
 void initTIM(void);
 void initADC(void);
 
-void TransmitUSARTToI2C(uint32_t address);
-
+//void TransmitUSARTToI2C(uint32_t address);
+void init_digiPot(int c);
 
 
 // User define sine wave
@@ -187,32 +187,40 @@ int main(void)
 	
   while (1)
   {
-    transmit_string("Waiting for USART input.\r\n");
+    transmit_string("Waiting for USART input.\n");
+				
+		while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE) { }
 		
-		/*
-		while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE) { }		//prevent the text from being sent like crazy
-		if(newDataAvailable) {
-			//TransmissionWriteHelper(0, sizeof(receivedData), receivedData);
-			transmit_string("\r\nSending\r\n");
-			//TransmitUSARTToI2C(0);
-			WritePot(0, receivedData, 0);
-		}
-		
-		receivedData = 0;*/
-		
+		//transmit_char(newDataAvailable);
 		if(newDataAvailable) {
 			
-			//use strtol to translate the input string to a long
-			long convertedData = strtol((void*)input_buffer, NULL, 10) + 1;
-			
-			WritePot(0, convertedData, 0);
+			//use strtol to translate the input string to a long (but only hold onto it as an int because that's what the pot can handle)
+			int convertedData = strtol((void*)input_buffer, NULL, 10);
+			//WritePot(0, convertedData, 0);
+			init_digiPot(convertedData);
+			transmit_string("Received: ");
+			transmit_string((void*)input_buffer);
+			transmit_string(". Converted to: ");
+			transmit_char((char)convertedData);
+			transmit_string("\n");
 			
 			newDataAvailable = 0;		//data transfer complete
-		}
-		
-		//TransmissionWriteHelper(0x70, 1, 0xf);				//test write
-		
+		}		
   }
+	
+	/*static int data = 0;
+	while (1)
+			{
+					init_digiPot(data);
+					if(data<255) {
+						data++;
+					}
+					else {
+						data = 0;
+					}
+					HAL_Delay(25); // Delay 400ms
+					GPIOC->ODR ^= (1 << 6);
+			}*/
 }
 
 
@@ -303,11 +311,11 @@ void initADC(void){
 
 //the interrupt handler for USART
 void USART3_4_IRQHandler(void) {
-	
-	static char received_buffer[MaxBufferSize];
+	receivedData = USART3->RDR;
 	static int received_index = 0;
+	newDataAvailable = 1;
 	
-	if(USART3->ISR & USART_ISR_RXNE) {								//character has been received
+	//if(USART3->ISR & USART_ISR_RXNE) {								//character has been received
 		char receivedChar = (char)(USART3->RDR & 0xFF);		//filter the received character and store it temporarily
 		
 		if((receivedChar == '\r') || (receivedChar == '\n')) {
@@ -327,11 +335,15 @@ void USART3_4_IRQHandler(void) {
 			
 			received_buffer[received_index++] = receivedChar;								//otherwise, append data to the buffer
 		}
-	}
+	//}
 	
-	transmit_string("Sending the following data: ");
-	transmit_string((void*)input_buffer);																//transmit back what was sent over UART for confirmation
-	transmit_string("\n");
+	//transmit_string("Sending the following data: ");
+	//transmit_string((void*)received_buffer);																//transmit back what was sent over UART for confirmation
+	//transmit_string("\n");
+	
+	//receivedData = USART3->RDR;
+	//transmit_char(receivedData);
+	//newDataAvailable = 1;
 	
 	/*receivedData = USART3->RDR;
 	transmit_char(receivedData);
@@ -339,7 +351,7 @@ void USART3_4_IRQHandler(void) {
 }
 
 // Transmits anything received over USART to an I2C device of the specified address.
-void TransmitUSARTToI2C(uint32_t address) {
+/*void TransmitUSARTToI2C(uint32_t address) {
 	//transmit_char('#');
 	//while((USART3->ISR & USART_ISR_RXNE) != USART_ISR_RXNE);
 	//transmit_char('@');
@@ -349,7 +361,7 @@ void TransmitUSARTToI2C(uint32_t address) {
 	}
 	
 	transmit_string("Data sent.\r\n");
-}
+}*/
 
 
 /* Initialize the LEDs for debugging purposes */
