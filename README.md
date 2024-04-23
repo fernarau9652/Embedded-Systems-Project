@@ -1,13 +1,19 @@
-# Embedded-Systems-Project (Needs a new name)
+# Digital and Analog Synthesizer with adjustable Frequency Scaling
 ECE 5780/6780 Mini-Project for SPRING 2024 \
 Team Members: Chase Griswold (6780), Fernando Araujo (6780), Alex Baret (5780), Vincent Banh (5780)
 
 ## Overview
-_Briefly introduce the project, including its purpose, goals, and any relevant context. Mention the target hardware platform, development tools, and programming languages used._
+_Briefly introduce the project, including its purpose, goals, and any relevant context. Mention the target hardware platform, development tools, and programming languages used._ \
+
+The purpose of this project is to develop a digital and analog synthesizer machine that would take both types of inputs to output a modified synthesized wave, which can be used for voice modelization in further developments of this project. \
+Our goals were to utilize various embedded system applications such as:
+- Designing two custom PCBs that allow for signal generation and frequency oscillator modulation using physical and digital potentiometers.
+- DAC and ADC to generate our signals and store them in the DMA while triggering timers to determine sampling rates.
+- I2C and USART communication to determine resistance change in our custom PCBs that modulate a signal frequency while implementing interrupts for Putty/Waveforms User interfacing to level the signal modulation to a desired value.
 
 Analog waveforms may be generated with two custom PCBs designed specifically for this project. One PCB generates a square wave with its frequency variation controlled via an I2C-controlled digital potentiometer. 
 
-The other PCB is designed to emit analog waveforms and may be configured to generate a square wave, a triangle wave, or a sine wave using LM741 Operational Amplifiers. Waveforms from the second PCB may be sampled using the onboard ADC of the STM32. 
+The other PCB is designed to emit analog waveforms and may be configured to generate a square wave, a triangle wave, or a sine wave using LM741 Operational Amplifiers. Waveforms from the second PCB may be sampled using the STM32's onboard ADC. 
 
 Separate from the custom-PCB waveform generation, TIM7 (a timer onboard the STM32) consisting of a 16-bit auto-reload counter driven by a programmable
 prescaler, a direct memory access controller (DMA onboard the STM32) used to perform programmable data transfers between memory-mapped peripherals, and a digital-to-analog converter (DAC onboard the STM32) have been utilized to implement digital signal synthesis.
