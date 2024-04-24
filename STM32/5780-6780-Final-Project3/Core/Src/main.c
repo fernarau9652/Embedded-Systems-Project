@@ -21,7 +21,6 @@
 #include "stdlib.h"
 #include "usart.h"
 #include "i2c.h"
-#include "ds1803i2c.h"
 #include "stm32f0xx.h"  // Device header
 #include <stdio.h>
 #include <string.h>
