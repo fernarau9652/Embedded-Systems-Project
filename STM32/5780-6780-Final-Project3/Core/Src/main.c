@@ -44,6 +44,19 @@ static char received_buffer[MaxBufferSize];
 #define res_8b 256
 #define res_12b 4096
 
+ /* Modulation 1
+#define FREQ1 554.37 // C5#
+#define FREQ2 659.25 // E5 */
+
+ /* Modulation 2
+#define FREQ1 440.00 // A4
+#define FREQ2 123.47 // B2 */
+
+// /* Modulation 3
+#define FREQ1 1244.51 // D6#
+#define FREQ2 2349.32 // D7 */
+
+
 // Private variables
 DAC_HandleTypeDef hdac;
 DMA_HandleTypeDef hdma_dac_ch1;
@@ -69,16 +82,17 @@ void init_digiPot(int c);
 	
 // User define sine wave
 uint32_t sine_val[MAX_SAMPLES];
-//uint32_t a[MAX_SAMPLES];
 void get_sineval() {
 	for (int i = 0; i < MAX_SAMPLES; i++) {
-		//sine_val[i] = (sin(i * 2 * pi * FREQ / MAX_SAMPLES) + 1) * res_12b / 2;
-		//sine_val[i] = (sin(i * 2 * pi / MAX_SAMPLES) + 1) * res_12b / 2;
-		float a = (sin(i * 2 * pi / MAX_SAMPLES) + 1);
-		float cs = (sin(i * (554.37/210) * 2 * pi / MAX_SAMPLES) + 1);
-		float b = (sin(i * (659.25/210) * 2 * pi / MAX_SAMPLES) + 1);
+		// /* General Sine Wave of 330 Hz
+		sine_val[i] = (sin(i * 2 * pi / MAX_SAMPLES) + 1) * res_12b / 2; // */
+				
+		// /* Signal modulation
+		float a = (sin(i * 2 * pi / MAX_SAMPLES) + 1); // Sine wave of 330 Hz
+		float cs = (sin(i * (FREQ1/210) * 2 * pi / MAX_SAMPLES) + 1); // Sine wave of 
+		float b = (sin(i * (FREQ2/210) * 2 * pi / MAX_SAMPLES) + 1);
 		float val = (a + cs + b)/3;
-		sine_val[i] = val * res_12b / 2;
+		sine_val[i] = val * res_12b / 2; // */
 	}
 }
 	
