@@ -40,7 +40,7 @@ static char received_buffer[MaxBufferSize];
 
 // DAC2DMA private defines
 #define pi 3.14155926
-#define MAX_SAMPLES 128
+#define MAX_SAMPLES 100
 #define res_8b 256
 #define res_12b 4096
 
@@ -84,11 +84,11 @@ void init_digiPot(int c);
 uint32_t sine_val[MAX_SAMPLES];
 void get_sineval() {
 	for (int i = 0; i < MAX_SAMPLES; i++) {
-		// /* General Sine Wave of 330 Hz
+		 /* General Sine Wave of 420 Hz
 		sine_val[i] = (sin(i * 2 * pi / MAX_SAMPLES) + 1) * res_12b / 2; // */
 				
 		// /* Signal modulation
-		float a = (sin(i * 2 * pi / MAX_SAMPLES) + 1); // Sine wave of 330 Hz
+		float a = (sin(i * 2 * pi / MAX_SAMPLES) + 1); // Sine wave of 420 Hz
 		float cs = (sin(i * (FREQ1/210) * 2 * pi / MAX_SAMPLES) + 1); // Sine wave of 
 		float b = (sin(i * (FREQ2/210) * 2 * pi / MAX_SAMPLES) + 1);
 		float val = (a + cs + b)/3;
