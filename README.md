@@ -30,7 +30,6 @@ prescaler, a direct memory access controller (DMA onboard the STM32) used to per
 - C 
 
 ## Features
-_List the key features and functionalities of the embedded system. This could include hardware components, sensors, actuators, communication protocols, user interfaces, etc._
 
 - Output analog sine waves using TIM7, DMA, and DAC to PA4
 - Square Wave Function Generator PCB that uses an LM324N and a DS18030 Digital Potentiometer
@@ -38,36 +37,32 @@ _List the key features and functionalities of the embedded system. This could in
 - Function Generator PCB utilizing LM741 Operational Amplifiers to generate square, triangle, and sine waves
 
 ## Getting Started
-_Provide instructions for setting up the development environment and getting the project up and running on the target hardware. Include any dependencies, libraries, or tools required._
-
-
 1) Acquire an ADC for waveform analysis
 2) Diligent Waveforms 
 3) USB/USART chip
 4) μVision Kiel IDE
-
-### Prerequisites
-_List any prerequisites or dependencies needed to build and run the project. This could include software tools, compilers, SDKs, etc._
-
-
+5) PuTTY
+6) DS18030 Digital Potentiometer PCB
+7) Function Generator PCB
 
 ### Installation
-Step-by-step instructions for installing and configuring the project. Include commands, configuration files, or scripts necessary to set up the environment.
+The pinout is as follows for I2C and UART communication:
+- PB14 - SDA
+- PB13 - SCL
+- PB10 - TX
+- PB11 - RX
+- PA4 - Analog sine wave output
+
+Connect the TX pin to RX on your USB to TTL UART device, and RX to TX. This enables serial console control of the project. SDA and SCL must then be connected to the I2C digital potentiometer PCB's SDA and SCL pins. Pull-up resistors are not needed as the board has built-in pull-ups.
+
+Alternately, PA4 may be directly connected to an oscilloscope or output device to take advantage of the internal function generation of the project.
 
 ## Usage
-Explain how to use the embedded system once it's up and running. Provide examples, code snippets, or diagrams to illustrate usage scenarios and interactions.
+Usage in all cases save for the UART-controlled digital potentiometer functionality is plug-and-play. There is no need for user input beyond physical adjustments of potentiometers or operation of the photoresistor.
+
+When operating over UART, initial connection once the microcontroller has been reset will result in the message "Waiting for USART input. Please enter a number between 0 and 255." being printed to the terminal. This message is intended to be self-explanatory, and an input sanitation/verification system has been implemented to reject any other inputs beyond this range of values.
+
+Due to an issue regarding the input system, it may occasionally be necessary to press the enter key multiple times to receive a response from the microcontroller. Only do this after entering the full value intended.
 
 ## Architecture
 Describe the overall architecture of the embedded system, including its software and hardware components. Use diagrams, block diagrams, or UML diagrams to visualize the system's structure and relationships.
-
-## Contributing
-Guidelines for contributing to the project, including how to report bugs, submit feature requests, or contribute code. Specify any coding standards, version control practices, or contribution workflows to follow.
-
-## License
-Specify the license under which the project is distributed. Include any relevant copyright notices, disclaimers, or attribution requirements.
-
-## Acknowledgements
-Acknowledge any individuals, organizations, or resources that contributed to the project's development. This could include mentors, collaborators, open-source libraries, or third-party tools.
-
-## Contact
-Provide contact information for the project maintainers or developers. Include email addresses, social media profiles, or links to issue trackers or discussion forums.
