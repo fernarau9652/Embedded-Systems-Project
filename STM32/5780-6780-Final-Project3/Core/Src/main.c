@@ -310,16 +310,16 @@ void initLEDs(void) {
 void DAC2DMA_wave(void) {
 	// get the sine signal
 	get_sineval();
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+	//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
 	
 	// begin timer
 	HAL_TIM_Base_Start(&htim7);
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
+	//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
 
 
 	// start DAC to DMA (Then loop around to get signal)
 	HAL_DAC_Start_DMA(&hdac, DAC1_CHANNEL_1, sine_val, MAX_SAMPLES, DAC_ALIGN_12B_R);
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+	//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
 }
 
 
