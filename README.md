@@ -80,7 +80,9 @@ When operating over UART, the initial connection once the microcontroller has be
 
 Due to an issue regarding the input system, it may occasionally be necessary to press the enter key multiple times to receive a response from the microcontroller. Only do this after entering the full value intended.
 
-To modulate a digital signal wave using additive synthesis, the code allows users to add two Sine waves of different frequencies, takes the average between the values, and then buffs the signals to the intended 12-bit resolution for the output. 
+To use the function generator circuit,  connect an oscilloscope or an ADC to the respective op-amp that generates the desired waveform (square, sawtooth, sine).
+
+To modulate a digital signal wave using additive synthesis, the code allows users to add two Sine waves of different frequencies, takes the average between the values, and then buffers the signals to the intended 12-bit resolution for the output. 
 
 Users may adjust FREQ1 and FREQ2 to whatever musical note frequency they choose. The code will adjust the additive sine signals to the original output signal of 420 Hz and then output the final product through PA4. Images of sample waves simulated in this project can be seen here: \
 ./Documentation/DAC_waves/
