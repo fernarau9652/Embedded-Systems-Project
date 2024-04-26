@@ -6,10 +6,13 @@ Official Documentation with wire diagrams, schematics, and flow charts can be fo
 ./Documentation/6780_CircuitDesign_DDS_REV-A_Final.pdf
 
 This is the path to the finalized project folder for this project: \
-./STM32/5780-6780-Final-Project3/
+./STM32/5780-6780-Final-Project3/  (Other files are previous revisions of the project)
+
+Documentation related to the PCB designs with BoM datasheets can be found here: \
+./PCB/  ("Board EXPORTS" contain the PCB design revisions; everything else is datasheets and LBR files)
 
 Additional code provided by Chase can be found here: \
-./Chase_Mains/
+./Chase_Mains/  (Contains code for ADC and I2C control for digital potentiometer)
 
 ## Overview
 The purpose of this project is to develop a digital and analog synthesizer machine that would take both types of inputs to output a modified synthesized wave, which can be used for voice modelization in further developments of this project. \
@@ -38,7 +41,7 @@ prescaler, a direct memory access controller (DMA onboard the STM32) used to per
 - μVision Kiel IDE
 - Diligent Waveforms 
 #### Programming Languages ####
-- C 
+- C
 
 ## Features
 - Output analog sine waves using TIM7, DMA, and DAC to PA4
